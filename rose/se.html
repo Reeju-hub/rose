@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Rose Day Bullu 🌹</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Tiro+Devanagari+Hindi:ital@0;1&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #fff1f2;
+        }
+        .hindi { font-family: 'Tiro Devanagari Hindi', serif; }
+        .romantic { font-family: 'Dancing Script', cursive; }
+        
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .content-wrapper { position: relative; z-index: 10; opacity: 0; transition: opacity 1s ease-in-out; }
+        .hero-text-shadow { text-shadow: 0px 2px 10px rgba(0,0,0,0.3); }
+        
+        #interactive-heart-container { width: 260px; height: 260px; cursor: pointer; margin: 0 auto; position: relative; z-index: 20; }
+        
+        .bouquet-bg {
+            position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
+            width: 350px; opacity: 0.7; pointer-events: none; z-index: 15;
+        }
+
+        #music-player { position: fixed; bottom: 20px; right: 20px; z-index: 99; }
+        #play-pause-btn {
+            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer;
+            border: 2px solid #be123c; box-shadow: 0 4px 20px rgba(190, 18, 60, 0.3);
+        }
+
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle, #fb7185, #be123c);
+            transition: opacity 1s ease-in-out;
+        }
+        .rose-btn {
+            animation: pulseBtn 2s infinite; background: white; color: #be123c;
+            padding: 15px 40px; border-radius: 50px; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        @keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    </style>
+</head>
+<body class="text-gray-900 overflow-x-hidden">
+
+    <!-- Screen 1: The Envelope/Splash -->
+    <div id="splash-screen">
+        <div class="text-center text-white p-8">
+            <div class="mb-6 text-7xl animate-bounce">🌹</div>
+            <h2 class="text-4xl hindi font-bold mb-2">हैप्पी रो़ज डे Bullu</h2>
+            <p class="text-xl opacity-90 mb-8 italic">"A small gesture for my favorite person..."</p>
+            <button id="splash-button" class="rose-btn">Open Your Message 🌹</button>
+        </div>
+    </div>
+
+    <!-- Background for Falling Roses 🌹 (Starts on Heart Click) -->
+    <canvas id="bg-canvas"></canvas>
+
+    <audio id="love-song" loop>
+        <source src="https://ia601007.us.archive.org/18/items/aaj-se-teri-arijit-singh-guitar-instrumental-golden-melody/Aaj%20Se%20Teri%20Arijit%20Singh%20Guitar%20Instrumental%20Golden%20Melody.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="music-player" class="hidden">
+        <button id="play-pause-btn" type="button" aria-label="Play or Pause Music" title="Play or Pause Music">
+            <svg id="play-icon" class="w-8 h-8 text-rose-600 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" /></svg>
+            <svg id="pause-icon" class="w-8 h-8 text-rose-600" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 4.5a.75.75 0 00-.75.75v10.5a.75.75 0 001.5 0V5.25a.75.75 0 00-.75-.75zM14.25 4.5a.75.75 0 00-.75.75v10.5a.75.75 0 001.5 0V5.25a.75.75 0 00-.75-.75z" /></svg>
+        </button>
+    </div>
+
+    <div class="content-wrapper" id="main-content">
+        <div class="relative p-6 sm:p-8 min-h-screen flex flex-col items-center justify-center text-center">
+            
+            <!-- Bouquet Image Behind Heart (From your upload) -->
+            <img src="rose.jpeg" class="bouquet-bg" alt="Rose Bouquet">
+            
+            <!-- The Magic Heart -->
+            <div id="interactive-heart-container"></div>
+            
+            <div class="hero-text-shadow mt-4">
+                <h1 class="text-5xl md:text-6xl font-bold text-rose-700 romantic mb-2">Happy Rose Day</h1>
+                <h2 class="text-3xl md:text-4xl font-bold text-rose-600 hindi">मेरी प्यारी Bullu के लिए</h2>
+            </div>
+            
+            <div class="mt-8 text-rose-800 font-medium bg-white/40 backdrop-blur-md p-4 rounded-2xl border border-white/50 shadow-lg max-w-sm mx-auto">
+                <p class="text-xl hindi italic">"तुम्हारी खुशबू से महकती है मेरी हर सुबह..."</p>
+                <p class="text-sm mt-3 font-bold animate-pulse text-rose-600 uppercase tracking-tighter">Tap the heart to see the magic 🌹</p>
+            </div>
+
+            <div class="absolute bottom-10 animate-bounce">
+                <svg class="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+            </div>
+        </div>
+
+        <div class="bg-white/95 rounded-t-[3rem] shadow-2xl py-16 px-6 sm:px-12 backdrop-blur-lg">
+            
+            <!-- Shayari Section -->
+            <div class="max-w-3xl mx-auto text-center mb-20" data-aos="fade-up">
+    <h2 class="text-3xl font-bold text-rose-600 mb-8 hindi">खास आपके लिए, My Bullu</h2>
+    <p class="text-2xl leading-relaxed text-gray-700 hindi italic">
+        Sach kahu toh tumhare bina ye din bhi adhoora lagta hai.<br>
+        Kabhi kabhi tumhari yaad itni zyada aati hai ki aankhon mein<br>
+        aansoon tak aa jate hain, kyunki main tumse itna door hoon.<br>
+        Par mera pyaar tumhare liye har pal badhta hi ja raha hai.<br><br>
+
+        Tum sirf meri girlfriend nahi ho, tum meri wife ho aur meri puri zindagi ho.<br>
+        Main bas tumse hi shaadi karna chahta hoon,<br>
+        kyunki agar tum nahi toh main kisi aur ka ho hi nahi paoonga.<br><br>
+        
+        <span class="text-rose-500 font-bold">Happy Rose Day, Ragini! ❤️</span>
+    </p>
+</div>
+
+            <!-- Photos Gallery -->
+            <div class="max-w-5xl mx-auto text-center mb-20" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-rose-600 mb-10 hindi">हमारी खूबसूरत यादें</h2>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <img src="1.jpeg" alt="Beautiful memory 1" class="rounded-2xl shadow-xl w-full h-64 object-cover transform hover:scale-105 transition duration-500">
+                    <img src="2.jpeg" alt="Beautiful memory 2" class="rounded-2xl shadow-xl w-full h-64 object-cover transform hover:scale-105 transition duration-500">
+                    <img src="3.jpeg" alt="Beautiful memory 3" class="rounded-2xl shadow-xl w-full h-64 object-cover transform hover:scale-105 transition duration-500">
+                    <img src="4.jpeg" alt="Beautiful memory 4" class="rounded-2xl shadow-xl w-full h-64 object-cover transform hover:scale-105 transition duration-500">
+                </div>
+            </div>
+
+            <!-- Heartfelt Message -->
+            <div class="max-w-3xl mx-auto text-center mb-20" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-rose-600 mb-6 hindi">मेरी दुनिया हो तुम</h2>
+                <p class="text-xl leading-relaxed text-gray-700 hindi mb-4">
+                    तुमसे ही मेरी सुबह है, तुमसे ही मेरी शाम,<br>
+                    मेरी हर सोच में बसता है बस तुम्हारा ही नाम।
+                </p>
+                <p class="text-lg text-gray-600 italic font-light">Distance only makes me realize how much you mean to me. Waiting for the moment I can hand you a real rose in person.</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto text-center py-10" data-aos="zoom-in">
+                 <div class="text-5xl mb-4">🌹❤️🌹</div>
+                <h2 class="text-4xl font-bold text-rose-700 romantic">Forever Yours</h2>
+                <p class="text-lg text-gray-600 hindi mt-2 italic">मेरा वादा है, जल्दी लौट आऊंगा।</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        const audio = document.getElementById('love-song');
+        const splashScreen = document.getElementById('splash-screen');
+        const splashButton = document.getElementById('splash-button');
+        const mainContent = document.getElementById('main-content');
+        const heartContainer = document.getElementById('interactive-heart-container');
+
+        let musicStarted = false;
+        let isHeartBeating = false;
+        let i_scene, i_camera, i_renderer, i_heart;
+        const pulses = [];
+        let bg_scene, bg_camera, bg_renderer, bg_roses = [];
+
+        // Unlock Screen Logic
+        splashButton.addEventListener('click', () => {
+            splashScreen.style.opacity = '0';
+            // Pre-unlock audio
+            audio.play().then(() => audio.pause()).catch(() => {});
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                mainContent.style.opacity = '1';
+                AOS.init({ once: true, offset: 50, duration: 1000 });
+                initInteractiveHeart();
+            }, 1000);
+        });
+
+        // 3D Beating Heart Scene
+        function initInteractiveHeart() {
+            i_scene = new THREE.Scene();
+            i_camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            i_renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            i_renderer.setSize(260, 260);
+            heartContainer.appendChild(i_renderer.domElement);
+            i_camera.position.z = 18;
+
+            i_scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const pLight = new THREE.PointLight(0xffffff, 1);
+            pLight.position.set(10, 10, 10);
+            i_scene.add(pLight);
+
+            const shape = new THREE.Shape();
+            shape.moveTo(25, 25);
+            shape.bezierCurveTo(25, 25, 20, 0, 0, 0);
+            shape.bezierCurveTo(-30, 0, -30, 35, -30, 35);
+            shape.bezierCurveTo(-30, 55, -10, 77, 25, 95);
+            shape.bezierCurveTo(60, 77, 80, 55, 80, 35);
+            shape.bezierCurveTo(80, 35, 80, 0, 50, 0);
+            shape.bezierCurveTo(35, 0, 25, 25, 25, 25);
+
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: 12, bevelEnabled: true, bevelSize: 2, bevelThickness: 2 }).center().scale(0.13, 0.13, 0.13).rotateZ(Math.PI);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.1 });
+            i_heart = new THREE.Mesh(geo, mat);
+            i_scene.add(i_heart);
+            animateHeart();
+        }
+
+        function createHeartPulse() {
+            const pGeo = i_heart.geometry.clone();
+            const pMat = new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: 0.6 });
+            const p = new THREE.Mesh(pGeo, pMat);
+            p.scale.copy(i_heart.scale);
+            i_scene.add(p);
+            pulses.push(p);
+        }
+
+        function animateHeart() {
+            requestAnimationFrame(animateHeart);
+            i_heart.rotation.y += 0.01;
+            if (isHeartBeating) {
+                const s = 1 + 0.1 * Math.sin(Date.now() * 0.008);
+                i_heart.scale.set(s, s, s);
+            }
+            pulses.forEach((p, i) => {
+                p.scale.multiplyScalar(1.03);
+                p.material.opacity -= 0.015;
+                if(p.material.opacity <= 0) { i_scene.remove(p); pulses.splice(i, 1); }
+            });
+            i_renderer.render(i_scene, i_camera);
+        }
+
+        // Heart Click: The "Magic Start" Button
+        heartContainer.addEventListener('pointerdown', () => {
+            if (!musicStarted) {
+                // 1. Change heart color & start beating
+                i_heart.material.color.setHex(0xbe123c);
+                isHeartBeating = true;
+                setInterval(createHeartPulse, 800);
+                
+                // 2. Start falling roses 🌹
+                initRoseEmojiConfetti();
+                
+                // 3. Start music
+                audio.play();
+                musicStarted = true;
+                document.getElementById('music-player').classList.remove('hidden');
+            }
+        });
+
+        // Background: 🌹 Emoji Confetti logic
+        function createRoseTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.font = '100px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('🌹', 64, 64);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function initRoseEmojiConfetti() {
+            bg_scene = new THREE.Scene();
+            bg_camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            bg_renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: true });
+            bg_renderer.setSize(window.innerWidth, window.innerHeight);
+            bg_camera.position.z = 50;
+
+            const roseTexture = createRoseTexture();
+            const roseMaterial = new THREE.SpriteMaterial({ map: roseTexture, transparent: true });
+
+            for(let i=0; i<50; i++) {
+                const sprite = new THREE.Sprite(roseMaterial);
+                const scale = 5 + Math.random() * 4; // Medium size
+                sprite.scale.set(scale, scale, 1);
+                sprite.position.set((Math.random()-0.5) * 120, 60 + Math.random() * 40, (Math.random()-0.5) * 40);
+                sprite.userData = { speed: 0.06 + Math.random() * 0.12, offset: Math.random() * Math.PI * 2 };
+                bg_roses.push(sprite);
+                bg_scene.add(sprite);
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            requestAnimationFrame(animateConfetti);
+            const time = Date.now() * 0.002;
+            bg_roses.forEach(r => {
+                r.position.y -= r.userData.speed;
+                r.position.x += Math.sin(time + r.userData.offset) * 0.05;
+                if(r.position.y < -60) r.position.y = 60; // Loop back to top
+            });
+            bg_renderer.render(bg_scene, bg_camera);
+        }
+
+        document.getElementById('play-pause-btn').addEventListener('click', () => {
+            if (audio.paused) { audio.play(); } else { audio.pause(); }
+        });
+
+        window.addEventListener('resize', () => {
+            if(bg_camera) {
+                bg_camera.aspect = window.innerWidth / window.innerHeight;
+                bg_camera.updateProjectionMatrix();
+                bg_renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+    </script>
+</body>
+</html>
+
